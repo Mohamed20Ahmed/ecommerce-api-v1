@@ -48,22 +48,6 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
   res.status(201).json({ data: product });
 });
 
-exports.updateProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  if (req.body.title) {
-    req.body.slug = slugify(req.body.title);
-  }
-
-  const product = await Product.findOneAndUpdate({ _id: id }, req.body, {
-    new: true,
-  });
-
-  if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
-  }
-
-  res.status(200).json({ data: product });
-});
+exports.updateProduct = factory.updateOne(Product);
 
 exports.deleteProduct = factory.deleteOne(Product);
