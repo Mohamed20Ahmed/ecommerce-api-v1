@@ -3,20 +3,27 @@ const slugify = require("slugify");
 
 const SubCategory = require("../models/subCategoryModel");
 const ApiError = require("../utils/apiError");
+const ApiFeatures = require("../utils/apiFeatures");
 
 exports.getSubCategories = asyncHandler(async (req, res, next) => {
-  const page = +req.query.page || 1;
-  const limit = +req.query.limit || 100;
-  const skip = (page - 1) * limit;
+  const documentsCounts = await SubCategory.countDocuments();
 
-  const subCategories = await SubCategory.find(req.filterObj)
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name -_id" });
+  const apiFeatures = new ApiFeatures(SubCategory.find(), req.query)
+    .paginate(documentsCounts)
+    .filter()
+    .search()
+    .limitFields()
+    .sort();
 
-  res
-    .status(200)
-    .json({ results: subCategories.length, page, data: subCategories });
+  const { mongooseQuery, paginationResult } = apiFeatures;
+
+  const subCategories = await mongooseQuery;
+
+  res.status(200).json({
+    results: subCategories.length,
+    paginationResult,
+    data: subCategories,
+  });
 });
 
 exports.getSubCategory = asyncHandler(async (req, res, next) => {

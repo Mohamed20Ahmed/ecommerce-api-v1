@@ -3,54 +3,25 @@ const slugify = require("slugify");
 
 const Product = require("../models/productModel");
 const ApiError = require("../utils/apiError");
+const ApiFeatures = require("../utils/apiFeatures");
 
 exports.getProducts = asyncHandler(async (req, res, next) => {
-  const queryStringObj = { ...req.query };
-  const excludesFields = ["page", "limit", "sort", "fields", "keyword"];
+  const documentsCounts = await Product.countDocuments();
 
-  excludesFields.forEach((field) => delete queryStringObj[field]);
+  const apiFeatures = new ApiFeatures(Product.find(), req.query)
+    .paginate(documentsCounts)
+    .filter()
+    .search("Products")
+    .limitFields()
+    .sort();
 
-  // pagination
-  const page = +req.query.page || 1;
-  const limit = +req.query.limit || 50;
-  const skip = (page - 1) * limit;
-
-  // filteration
-  let queryStr = JSON.stringify(queryStringObj);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-  let mongooseQuery = Product.find(JSON.parse(queryStr))
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name" });
-
-  // sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    mongooseQuery = mongooseQuery.sort(sortBy);
-  }
-
-  // fields
-  if (req.query.fields) {
-    const fields = req.query.fields.split(",").join(" ");
-    mongooseQuery = mongooseQuery.select(fields);
-  } else {
-    mongooseQuery = mongooseQuery.select("-_v");
-  }
-
-  if (req.query.keyword) {
-    const query = {};
-    query.$or = [
-      { title: { $regex: req.query.keyword, $options: "i" } },
-      { description: { $regex: req.query.keyword, $options: "i" } },
-    ];
-
-    mongooseQuery = mongooseQuery.find(query);
-  }
+  const { mongooseQuery, paginationResult } = apiFeatures;
 
   const products = await mongooseQuery;
 
-  res.status(200).json({ results: products.length, page, data: products });
+  res
+    .status(200)
+    .json({ results: products.length, paginationResult, data: products });
 });
 
 exports.getProduct = asyncHandler(async (req, res, next) => {
