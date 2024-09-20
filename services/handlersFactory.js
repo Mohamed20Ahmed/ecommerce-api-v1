@@ -3,6 +3,19 @@ const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
 
+exports.getOne = (Model) =>
+  asyncHandler(async (req, res, next) => {
+    const document = await Model.findById(req.params.id);
+
+    if (!document) {
+      return next(
+        new ApiError(`No document for this id ${req.params.id}`, 404)
+      );
+    }
+
+    res.status(200).json({ data: document });
+  });
+
 exports.createOne = (Model) =>
   asyncHandler(async (req, res, next) => {
     const document = await Model.create(req.body);

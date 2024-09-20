@@ -1,8 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const slugify = require("slugify");
 
 const Product = require("../models/productModel");
-const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
 const factory = require("./handlersFactory");
 
@@ -25,20 +23,7 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
     .json({ results: products.length, paginationResult, data: products });
 });
 
-exports.getProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  const product = await Product.findById(id).populate({
-    path: "category",
-    select: "name",
-  });
-
-  if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
-  }
-
-  res.status(200).json({ data: product });
-});
+exports.getProduct = factory.getOne(Product);
 
 exports.createProduct = factory.createOne(Product);
 
