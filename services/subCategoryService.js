@@ -42,17 +42,7 @@ exports.getSubCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: subCategory });
 });
 
-exports.createSubCategory = asyncHandler(async (req, res, next) => {
-  const { name, category } = req.body;
-
-  const subCategory = await SubCategory.create({
-    name,
-    slug: slugify(name),
-    category,
-  });
-
-  res.status(201).json({ data: subCategory });
-});
+exports.createSubCategory = factory.createOne(SubCategory);
 
 exports.updateSubCategory = factory.updateOne(SubCategory);
 

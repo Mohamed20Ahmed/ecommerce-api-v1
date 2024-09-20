@@ -40,13 +40,7 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: product });
 });
 
-exports.createProduct = asyncHandler(async (req, res, next) => {
-  req.body.slug = slugify(req.body.title);
-
-  const product = await Product.create(req.body);
-
-  res.status(201).json({ data: product });
-});
+exports.createProduct = factory.createOne(Product);
 
 exports.updateProduct = factory.updateOne(Product);
 

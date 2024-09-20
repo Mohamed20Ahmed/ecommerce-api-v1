@@ -37,13 +37,7 @@ exports.getBrand = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: brand });
 });
 
-exports.createBrand = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
-
-  const brand = await Brand.create({ name, slug: slugify(name) });
-
-  res.status(201).json({ data: brand });
-});
+exports.createBrand = factory.createOne(Brand);
 
 exports.updateBrand = factory.updateOne(Brand);
 

@@ -37,16 +37,7 @@ exports.getCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: category });
 });
 
-exports.createCategory = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
-
-  const category = await Category.create({
-    name,
-    slug: slugify(name),
-  });
-
-  res.status(201).json({ data: category });
-});
+exports.createCategory = factory.createOne(Category);
 
 exports.updateCategory = factory.updateOne(Category);
 
