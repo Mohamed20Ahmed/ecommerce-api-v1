@@ -4,6 +4,7 @@ const slugify = require("slugify");
 const Category = require("../models/categoryModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const factory = require("./handlersFactory");
 
 exports.getCategories = asyncHandler(async (req, res, next) => {
   const documentsCounts = await Category.countDocuments();
@@ -67,14 +68,4 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: category });
 });
 
-exports.deleteCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  const category = await Category.findByIdAndDelete(id);
-
-  if (!category) {
-    return next(new ApiError(`No category for this id ${id}`, 404));
-  }
-
-  res.status(204).send();
-});
+exports.deleteCategory = factory.deleteOne(Category);

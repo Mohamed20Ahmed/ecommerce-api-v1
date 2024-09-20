@@ -4,6 +4,7 @@ const slugify = require("slugify");
 const Brand = require("../models/brandModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const factory = require("./handlersFactory");
 
 exports.getBrands = asyncHandler(async (req, res, next) => {
   const documentsCounts = await Brand.countDocuments();
@@ -61,14 +62,4 @@ exports.updateBrand = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: brand });
 });
 
-exports.deleteBrand = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  const brand = await Brand.findByIdAndDelete(id);
-
-  if (!brand) {
-    return next(new ApiError(`No brand for this id ${id}`, 404));
-  }
-
-  res.status(204).send();
-});
+exports.deleteBrand = factory.deleteOne(Brand);

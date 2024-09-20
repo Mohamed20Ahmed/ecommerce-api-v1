@@ -4,6 +4,7 @@ const slugify = require("slugify");
 const SubCategory = require("../models/subCategoryModel");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const factory = require("./handlersFactory");
 
 exports.getSubCategories = asyncHandler(async (req, res, next) => {
   const documentsCounts = await SubCategory.countDocuments();
@@ -74,17 +75,7 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: subCategory });
 });
 
-exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  const subCategory = await SubCategory.findByIdAndDelete(id);
-
-  if (!subCategory) {
-    return next(new ApiError(`No subCategory for this id ${id}`, 404));
-  }
-
-  res.status(204).send();
-});
+exports.deleteSubCategory = factory.deleteOne(SubCategory);
 
 exports.createFilterObj = (req, res, next) => {
   let filterObj = {};
