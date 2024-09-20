@@ -1,29 +1,7 @@
-const asyncHandler = require("express-async-handler");
-
 const SubCategory = require("../models/subCategoryModel");
-const ApiFeatures = require("../utils/apiFeatures");
 const factory = require("./handlersFactory");
 
-exports.getSubCategories = asyncHandler(async (req, res, next) => {
-  const documentsCounts = await SubCategory.countDocuments();
-
-  const apiFeatures = new ApiFeatures(SubCategory.find(), req.query)
-    .paginate(documentsCounts)
-    .filter()
-    .search()
-    .limitFields()
-    .sort();
-
-  const { mongooseQuery, paginationResult } = apiFeatures;
-
-  const subCategories = await mongooseQuery;
-
-  res.status(200).json({
-    results: subCategories.length,
-    paginationResult,
-    data: subCategories,
-  });
-});
+exports.getSubCategories = factory.getAll(SubCategory);
 
 exports.getSubCategory = factory.getOne(SubCategory);
 
