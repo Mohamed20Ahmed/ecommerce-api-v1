@@ -8,6 +8,8 @@ const {
   createBrand,
   updateBrand,
   deleteBrand,
+  uploadBrandImage,
+  resizeImage,
 } = require("../services/brandService");
 const {
   getBrandValidator,
@@ -16,12 +18,15 @@ const {
   deleteBrandValidator,
 } = require("../utils/validators/brandValidator");
 
-router.route("/").get(getBrands).post(createBrandValidator, createBrand);
+router
+  .route("/")
+  .get(getBrands)
+  .post(uploadBrandImage, resizeImage, createBrandValidator, createBrand);
 
 router
   .route("/:id")
   .get(getBrandValidator, getBrand)
-  .patch(updateBrandValidator, updateBrand)
+  .patch(uploadBrandImage, resizeImage, updateBrandValidator, updateBrand)
   .delete(deleteBrandValidator, deleteBrand);
 
 module.exports = router;
