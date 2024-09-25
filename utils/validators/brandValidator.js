@@ -4,7 +4,7 @@ const slugify = require("slugify");
 const validatorMiddleWare = require("../../middlewares/validatorMiddleware");
 
 exports.getBrandValidator = [
-  check("id").isMongoId().withMessage("nvalid brand id format"),
+  check("id").isMongoId().withMessage("Invalid brand id format"),
 
   validatorMiddleWare,
 ];
