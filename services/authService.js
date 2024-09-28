@@ -33,3 +33,64 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ data: user, token });
 });
+
+exports.protect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
+    return next(
+      new ApiError("You are not login, Please login to access this route", 401)
+    );
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+  const currentUser = await User.findById(decoded.userId);
+
+  if (!currentUser) {
+    return next(
+      new ApiError(
+        "The user that belong to this token does no longer exists",
+        401
+      )
+    );
+  }
+
+  if (currentUser.passwordChangedAt) {
+    const passChangedTimestamp = parseInt(
+      currentUser.passwordChangedAt / 1000,
+      10
+    );
+
+    if (passChangedTimestamp > decoded.iat) {
+      return next(
+        new ApiError(
+          "User recently changed his password, please login again..",
+          401
+        )
+      );
+    }
+  }
+
+  req.user = currentUser;
+
+  next();
+});
+
+exports.allowedTo = (...roles) =>
+  asyncHandler((req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ApiError("You are not allowed to access this route", 403)
+      );
+    }
+
+    next();
+  });

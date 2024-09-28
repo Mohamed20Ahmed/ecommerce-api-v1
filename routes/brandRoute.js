@@ -17,16 +17,31 @@ const {
   updateBrandValidator,
   deleteBrandValidator,
 } = require("../utils/validators/brandValidator");
+const { protect, allowedTo } = require("../services/authService");
 
 router
   .route("/")
   .get(getBrands)
-  .post(uploadBrandImage, resizeImage, createBrandValidator, createBrand);
+  .post(
+    protect,
+    allowedTo("manager", "admin"),
+    uploadBrandImage,
+    resizeImage,
+    createBrandValidator,
+    createBrand
+  );
 
 router
   .route("/:id")
   .get(getBrandValidator, getBrand)
-  .patch(uploadBrandImage, resizeImage, updateBrandValidator, updateBrand)
-  .delete(deleteBrandValidator, deleteBrand);
+  .patch(
+    protect,
+    allowedTo("manager", "admin"),
+    uploadBrandImage,
+    resizeImage,
+    updateBrandValidator,
+    updateBrand
+  )
+  .delete(protect, allowedTo("admin"), deleteBrandValidator, deleteBrand);
 
 module.exports = router;

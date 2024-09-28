@@ -18,17 +18,32 @@ const {
   updateUserValidator,
   deleteUserValidator,
 } = require("../utils/validators/userValidator");
+const { protect, allowedTo } = require("../services/authService");
 
 router
   .route("/")
-  .get(getUsers)
-  .post(uploadUserImage, resizeImage, createUserValidator, createUser);
+  .get(protect, allowedTo("manager", "admin"), getUsers)
+  .post(
+    protect,
+    allowedTo("admin"),
+    uploadUserImage,
+    resizeImage,
+    createUserValidator,
+    createUser
+  );
 
 router
   .route("/:id")
-  .get(getUserValidator, getUser)
-  .patch(uploadUserImage, resizeImage, updateUserValidator, updateUser)
-  .delete(deleteUserValidator, deleteUser);
+  .get(protect, allowedTo("admin"), getUserValidator, getUser)
+  .patch(
+    protect,
+    allowedTo("admin"),
+    uploadUserImage,
+    resizeImage,
+    updateUserValidator,
+    updateUser
+  )
+  .delete(protect, allowedTo("admin"), deleteUserValidator, deleteUser);
 
 router.put("/changePassword/:id", changeUserPassword);
 
