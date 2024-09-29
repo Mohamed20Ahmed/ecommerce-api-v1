@@ -11,20 +11,34 @@ const {
   uploadUserImage,
   resizeImage,
   changeUserPassword,
+  getLoggedUserData,
+  updateLoggedUserPassword,
+  updateLoggedUserData,
+  deleteLoggedUserData,
 } = require("../services/userService");
 const {
   getUserValidator,
   createUserValidator,
   updateUserValidator,
   deleteUserValidator,
+  updateLoggedUserValidator,
 } = require("../utils/validators/userValidator");
 const { protect, allowedTo } = require("../services/authService");
 
+router.use(protect);
+
+router.get("/getMe", getLoggedUserData, getUser);
+
+router.patch("/changeMyPassword", updateLoggedUserPassword);
+
+router.patch("/updateMe", updateLoggedUserValidator, updateLoggedUserData);
+
+router.delete("/deleteMe", deleteLoggedUserData);
+
 router
   .route("/")
-  .get(protect, allowedTo("manager", "admin"), getUsers)
+  .get(allowedTo("manager", "admin"), getUsers)
   .post(
-    protect,
     allowedTo("admin"),
     uploadUserImage,
     resizeImage,
@@ -34,17 +48,16 @@ router
 
 router
   .route("/:id")
-  .get(protect, allowedTo("admin"), getUserValidator, getUser)
+  .get(allowedTo("admin"), getUserValidator, getUser)
   .patch(
-    protect,
     allowedTo("admin"),
     uploadUserImage,
     resizeImage,
     updateUserValidator,
     updateUser
   )
-  .delete(protect, allowedTo("admin"), deleteUserValidator, deleteUser);
+  .delete(allowedTo("admin"), deleteUserValidator, deleteUser);
 
-router.put("/changePassword/:id", changeUserPassword);
+router.put("/changePassword/:id", allowedTo("admin"), changeUserPassword);
 
 module.exports = router;

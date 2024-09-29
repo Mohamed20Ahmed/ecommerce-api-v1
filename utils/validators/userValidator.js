@@ -99,6 +99,36 @@ exports.updateUserValidator = [
   validatorMiddleWare,
 ];
 
+exports.updateLoggedUserValidator = [
+  check("name")
+    .optional()
+    .isLength({ min: 2 })
+    .withMessage("Too short User name")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val);
+      return true;
+    }),
+
+  check("email")
+    .optional()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .custom((val) =>
+      User.findOne({ email: val }).then((email) => {
+        if (email) {
+          return Promise.reject(new Error("E-mail already in user"));
+        }
+      })
+    ),
+
+  check("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage("Invalid phone number only accepted EG and SA phone numbers"),
+
+  validatorMiddleWare,
+];
+
 exports.changeUserPasswordValidator = [
   check("currentPassword")
     .notEmpty()

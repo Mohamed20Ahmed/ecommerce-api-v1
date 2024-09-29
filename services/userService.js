@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
+const createToken = require("../utils/createToken");
 const User = require("../models/userModel");
 
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -70,3 +71,53 @@ exports.changeUserPassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteUser = factory.deleteOne(User);
+
+exports.getLoggedUserData = asyncHandler(async (req, res, next) => {
+  req.params.id = req.user._id;
+
+  next();
+});
+
+exports.updateLoggedUserPassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      password: await bcrypt.hash(req.body.password, 12),
+      passwordChangedAt: Date.now(),
+    },
+    {
+      new: true,
+    }
+  );
+
+  const token = createToken(user._id);
+
+  res.status(200).json({ data: user, token });
+});
+
+exports.updateLoggedUserData = asyncHandler(async (req, res, next) => {
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+    },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json({ data: updatedUser });
+});
+
+exports.deleteLoggedUserData = asyncHandler(async (req, res, next) => {
+  await User.updateOne(
+    { _id: req.user._id },
+    {
+      active: false,
+    }
+  );
+
+  res.status(204).json({ status: "Success" });
+});
